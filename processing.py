@@ -18,8 +18,8 @@ def preprocessing(img: cv.typing.MatLike) -> cv.typing.MatLike:
     heigth, width, _ = img.shape
     aspect = width / heigth
     img = cv.resize(img, (1000, int(1000*aspect)))
-    img = cv.GaussianBlur(img, (5,5), 2)
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    img = cv.GaussianBlur(img, (5,5), 2)
     img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
     return img
 
