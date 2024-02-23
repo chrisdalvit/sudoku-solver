@@ -90,5 +90,53 @@ def find_sudoku_square(img: cv.typing.MatLike) -> Tuple[cv.typing.MatLike, cv.ty
             if num_children == 9 or num_children == 81:
                 return _extract_sudoku_square(img, approx)
     
+def _compute_cell_border_mask(cell: cv.typing.MatLike) -> cv.typing.MatLike:
+    """Create mask of cell borders.
+
+    Args:
+        cell (cv.typing.MatLike): Cell with borders
+
+    Returns:
+        cv.typing.MatLike: Mask where borders have value 0 (or near to zero)
+    """
+    contours, _ = cv.findContours(cell, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+    s = max(contours, key=cv.contourArea)
+    mask = np.zeros(cell.shape, dtype="uint8")
+    mask = cv.drawContours(mask, [s], -1, 255, -1)
+    # Erode to avoid artifacts when subtracting the mask
+    return cv.erode(mask, cv.getStructuringElement(cv.MORPH_RECT,(7,7)), iterations=1) 
+
+def _remove_cell_borders(cell: cv.typing.MatLike) -> cv.typing.MatLike:
+    """Remove border artifacts on edges of the cell.
+
+    Args:
+        cell (cv.typing.MatLike): Cell with border
+
+    Returns:
+        cv.typing.MatLike: Cell with removed border
+    """
+    inverted_cell = 255 - cell
+    mask = _compute_cell_border_mask(cell)
+    cell = cv.bitwise_and(inverted_cell, mask)
+    cell = cv.medianBlur(cell, 5)
+    _, cell = cv.threshold(cell,127,255,cv.THRESH_BINARY)
+    return cell
     
+def extract_cells(img: cv.typing.MatLike) -> List[cv.typing.MatLike]:
+    """Extract single cells of Sudoku square.
+
+    Args:
+        img (cv.typing.MatLike): Image of Sudoku square
+
+    Returns:
+        List[cv.typing.MatLike]: List of cell image patches
+    """
+    height, width = img.shape
+    cell_height, cell_width = height // 9, width // 9
+    cells = []
+    for i in range(0, height-cell_height, cell_height):
+        for j in range(0, width-cell_width, cell_width):
+            cell = img[i:i+cell_height, j:j+cell_width]
+            cells.append(_remove_cell_borders(cell))
+    return cells
         
