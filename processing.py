@@ -69,7 +69,7 @@ def _extract_sudoku_square(img: cv.typing.MatLike, corners: List[List[int]]) -> 
     src_pts = _sort_corners(corners)
     dst_pts = np.array([[0,0], [1,0], [0,1], [1,1]]).astype(np.float32) * dst_size
     M = cv.getPerspectiveTransform(src_pts, dst_pts)
-    return cv.warpPerspective(img, M, (dst_size, dst_size)), M
+    return cv.warpPerspective(img, M, (dst_size+10, dst_size+10)), M
 
 def find_sudoku_square(img: cv.typing.MatLike) -> Tuple[cv.typing.MatLike, cv.typing.MatLike]:
     """Find and return the Sudoku square in an given image.
