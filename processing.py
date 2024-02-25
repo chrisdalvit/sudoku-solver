@@ -137,6 +137,7 @@ def extract_cells(img: cv.typing.MatLike) -> List[cv.typing.MatLike]:
     for i in range(0, height-cell_height, cell_height):
         for j in range(0, width-cell_width, cell_width):
             cell = img[i:i+cell_height, j:j+cell_width]
-            cells.append(_remove_cell_borders(cell))
-    return cells
+            cell = _remove_cell_borders(cell)
+            cells.append(cv.resize(cell, (28,28)))
+    return np.array(cells).astype(np.float32) / 255.
         
