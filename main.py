@@ -4,6 +4,7 @@ import torch
 
 from processing import preprocessing, find_sudoku_square, extract_cells
 from neural_network import NeuralNetwork
+from sudoku import Sudoku
 
 IMAGES_PATH = "./images/"
 
@@ -15,20 +16,19 @@ cells = extract_cells(square)
 model = NeuralNetwork()
 model.load_state_dict(torch.load("model_file.pt"))
 
-def is_empty_cell(cell):
-    cutoff = 5
+def is_empty_cell(cell, cutoff=5, threshold=0.03):
     center = cell[cutoff:-cutoff,cutoff:-cutoff]
     center_size = (cell.shape[0]-2*cutoff)*(c.shape[1]-2*cutoff)
-    return np.sum(center) / center_size > 0.03
+    return np.sum(center) / center_size > threshold
 
 preds = []
 for c in cells:
     if is_empty_cell(c):
-        cv.imshow("Image", c)
-        cv.waitKey(0)
-        X = torch.tensor(c).unsqueeze(0).unsqueeze(0)
+        X = torch.tensor([[c]])
         preds.append(model(X).argmax(1).item() + 1)
     else:
         preds.append(None)
 
-print(np.array(preds).reshape((9,9)))
+sudoku = Sudoku(preds)
+print(sudoku)
+print(sudoku.solve())
