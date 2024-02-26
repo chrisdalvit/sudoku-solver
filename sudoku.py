@@ -1,32 +1,49 @@
+from typing import Union, Type
+
 import numpy as np
 
 class Sudoku:
+    """Representation of a Sudoku puzzle."""
     
     def __init__(self, cells) -> None:
         if len(cells) != 81:
             raise ValueError(f"Expected a list of 81 cells. Got list of {len(cells)} cells.")
         self.cells = np.array(cells)
     
-    def _is_row_complete(self, row):
+    def _is_row_complete(self, row: int) -> bool:
+        """Check if row contains all values from 1 to 9."""
         return set(self[row,:]) == {1,2,3,4,5,6,7,8,9}
         
-    def _is_column_complete(self, col):
+    def _is_column_complete(self, col: int) -> bool:
+        """Check if column contains all values from 1 to 9."""
         return set(self[:,col]) == {1,2,3,4,5,6,7,8,9}
     
-    def _is_block_complete(self, block):
+    def _is_block_complete(self, block: int) -> bool:
+        """Check if block contains all values from 1 to 9.
+        
+        Blocks are enumerated from 0 to 8, starting from the upper left 3x3 block.
+        """
         i, j = block // 3, block % 3    
         return set(self[3*i:3*i+3,3*j:3*j+3].reshape(-1)) == {1,2,3,4,5,6,7,8,9}
     
-    def is_solved(self):
+    def is_solved(self) -> bool:
+        """Check if the puzzle is solved."""
         return all(self._is_row_complete(idx) and 
                    self._is_column_complete(idx) and 
                    self._is_block_complete(idx) for idx in range(9))
         
-    def _get_block(self, i, j):
+    def _get_block(self, i: int, j: int) -> list:
+        """Return block of sudoku square, the coordinates (i,j) belong to."""
         row, column = i // 3, j // 3
         return self[3*row:3*row+3, 3*column:3*column+3]
         
-    def _compute_empty_squares(self):
+    def _compute_empty_squares(self) -> list[tuple[tuple[int,int], list[int]]]:
+        """Compute a list of candidate values for each empty square.
+
+        Returns:
+            list[tuple[tuple[int,int], list[int]]]: List of tuples which contains the tuple of coordinates 
+            and a list of possible values for the correspnding coordinates.
+        """
         empty_squares = []
         for i in range(9):
             for j in range(9):
@@ -58,7 +75,12 @@ class Sudoku:
             repr.append(" ".join(row))
         return "".join(repr)
     
-    def solve(self):
+    def solve(self) -> Union["Sudoku", None]:
+        """Solve the Sudoku puzzle using backtracking.
+
+        Returns:
+            Sudoku: The solved puzzle.
+        """
         if self.is_solved():
             return self
         else:
