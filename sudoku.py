@@ -75,7 +75,7 @@ class Sudoku:
             repr.append(" ".join(row))
         return "".join(repr)
     
-    def solve(self) -> Union["Sudoku", None]:
+    def _solve_puzzle(self) -> Union["Sudoku", None]:
         """Solve the Sudoku puzzle using backtracking.
 
         Returns:
@@ -91,7 +91,13 @@ class Sudoku:
             (i,j), candidates  = sorted_empty_squares[0]
             for c in candidates:
                 self[i,j] = c
-                return self.solve()
+                return self._solve_puzzle()
             return None
-                
-            
+    
+    def _copy(self) -> "Sudoku":
+        """Return a copy of the Sudoku."""
+        return Sudoku(self.cells.copy())
+    
+    def solve(self) -> Union["Sudoku", None]:
+        """Return a solved copy of the Sudoku."""
+        return self._copy()._solve_puzzle()

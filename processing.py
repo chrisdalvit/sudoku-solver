@@ -70,14 +70,14 @@ def _extract_sudoku_square(img: cv.typing.MatLike, corners: List[List[int]]) -> 
     M = cv.getPerspectiveTransform(src_pts, dst_pts)
     return cv.warpPerspective(img, M, (dst_size+10, dst_size+10)), src_pts
 
-def find_sudoku_square(img: cv.typing.MatLike) -> Tuple[cv.typing.MatLike, cv.typing.MatLike]:
+def find_sudoku_square(img: cv.typing.MatLike) -> Tuple[cv.typing.MatLike, List[List[int]]]:
     """Find and return the Sudoku square in an given image.
 
     Args:
         img (cv.typing.MatLike): Image with Sudoku square
 
     Returns:
-        Tuple[cv.typing.MatLike, cv.typing.MatLike]: The extracted image patch and the matrix applied for the perspective transformation 
+        Tuple[cv.typing.MatLike, List[List[int]]]: The extracted image patch and the corners of the Sudoku square
     """
     contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     
@@ -140,15 +140,38 @@ def extract_cells(img: cv.typing.MatLike) -> List[cv.typing.MatLike]:
             cells.append(cv.resize(cell, (28,28)))
     return np.array(cells).astype(np.float32) / 255.
     
-def blend_images(foreground, background, mask, color=(0.,0.,1.)):
+def blend_images(foreground: cv.typing.MatLike, background: cv.typing.MatLike, mask: cv.typing.MatLike, color=(0.,0.,1.)):
+    """Blend solution image with original background image.
+
+    Args:
+        foreground (cv.typing.MatLike): Image of the solution digits to blend in with range [0,1]
+        background (cv.typing.MatLike): Original background image with range [0,255]
+        mask (cv.typing.MatLike): Mask to use for the alpha channel with range [0,1]
+        color (tuple, optional): Color of the blended digits. Defaults to (0.,0.,1.).
+
+    Returns:
+        cv.typing.MatLike: The blended image
+    """
     foreground = foreground * color
-    foreground = cv.multiply(mask, foreground)
     background = cv.multiply((1.0 - mask).astype(np.uint8), background)
     return cv.add((foreground*255).astype(np.uint8), background)
 
-def draw_digits(img, preds, corners, transform_size=1000):
-    sudoku = Sudoku(preds)
-    sudoku.solve()
+def draw_digits(img: cv.typing.MatLike, sudoku: Sudoku, corners: List[List[int]], transform_size=1000) -> cv.typing.MatLike:
+    """Apply perspecitve transform to Sudoku square and draw the solution digits.
+
+    Args:
+        img (cv.typing.MatLike): The original image where the Sudoku square is located
+        sudoku (Sudoku): The Sudoku to solve
+        corners (List[List[int]]): List of corners of the Sudoku square in the original image
+        transform_size (int, optional): _description_. Defaults to 1000.
+
+    Returns:
+        cv.typing.MatLike: Image with solution digits and applied perspective transform
+    """
+    solution = sudoku.solve()
+    
+    if solution is None:
+        return img
 
     dst_pts = np.array([[0,0], [1,0], [0,1], [1,1]]).astype(np.float32) * 1000
     M = cv.getPerspectiveTransform(corners, dst_pts)
@@ -156,12 +179,12 @@ def draw_digits(img, preds, corners, transform_size=1000):
 
     cell_height, cell_width = transform_size // 9, transform_size // 9
 
-    s = Sudoku(preds)
     for i, px in enumerate(range(0, transform_size-cell_height, cell_height)):
         for j, py in enumerate(range(0, transform_size-cell_width, cell_width)):
-            if s[i,j] is None:
+            if sudoku[i,j] is None:
                 patch = wraped[px:px+cell_height, py:py+cell_width]
-                patch = cv.putText(patch, str(sudoku[i,j]), (int(cell_width*0.2),int(cell_height*0.85)), cv.FONT_HERSHEY_COMPLEX, 3, (1.,1.,1.), 3, cv.LINE_AA)
+                digit_lower_left_coordinates = (int(cell_width*0.2),int(cell_height*0.85))
+                patch = cv.putText(patch, str(solution[i,j]), digit_lower_left_coordinates, cv.FONT_HERSHEY_COMPLEX, 3, (1.,1.,1.), 3, cv.LINE_AA)
         
     return cv.warpPerspective(wraped, np.linalg.inv(M), (img.shape[1], img.shape[0]))
 

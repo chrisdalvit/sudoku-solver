@@ -4,6 +4,7 @@ import torch
 
 from processing import preprocessing, find_sudoku_square, extract_cells, blend_images, draw_digits
 from neural_network import NeuralNetwork
+from sudoku import Sudoku
 
 IMAGES_PATH = "./images/"
 
@@ -28,7 +29,8 @@ for c in cells:
     else:
         preds.append(None)
 
-I = draw_digits(img, preds, corners)
+sudoku = Sudoku(preds)
+I = draw_digits(img, sudoku, corners)
 outImage = blend_images(I, img, I)
 
 cv.imshow("Square", outImage)
