@@ -2,15 +2,14 @@ import cv2 as cv
 import numpy as np
 import torch
 
-from processing import preprocessing, find_sudoku_square, extract_cells
+from processing import preprocessing, find_sudoku_square, extract_cells, blend_images, draw_digits
 from neural_network import NeuralNetwork
-from sudoku import Sudoku
 
 IMAGES_PATH = "./images/"
 
 img = cv.cvtColor(cv.imread(IMAGES_PATH + "sudoku_photo.jpg"), cv.COLOR_BGR2RGB)
 prep_img = preprocessing(img)
-square, _ = find_sudoku_square(prep_img)
+square, corners = find_sudoku_square(prep_img)
 cells = extract_cells(square)
 
 model = NeuralNetwork()
@@ -24,11 +23,13 @@ def is_empty_cell(cell, cutoff=5, threshold=0.03):
 preds = []
 for c in cells:
     if is_empty_cell(c):
-        X = torch.tensor([[c]])
+        X = torch.tensor(c).unsqueeze(0).unsqueeze(0)
         preds.append(model(X).argmax(1).item() + 1)
     else:
         preds.append(None)
 
-sudoku = Sudoku(preds)
-print(sudoku)
-print(sudoku.solve())
+I = draw_digits(img, preds, corners)
+outImage = blend_images(I, img, I)
+
+cv.imshow("Square", outImage)
+cv.waitKey(0)
