@@ -19,7 +19,7 @@ def is_empty_cell(cell, cutoff=5, threshold=0.03):
     center_size = (cell.shape[0]-2*cutoff)*(cell.shape[1]-2*cutoff)
     return np.sum(center) / center_size > threshold
 
-def process_sudoku_image(img, model):
+def process_sudoku(img, model):
     prep_img = preprocessing(img)
     square, corners = find_sudoku_square(prep_img)
     if square is None:
@@ -56,14 +56,14 @@ if __name__ == "__main__":
             if not ret:
                 print("Sudoku Solver: Can't receive frame from camera. Abort Sudoku Solver.")
                 exit(1)
-            cv.imshow(CV_WINDOW_TITLE, process_sudoku_image(frame, model))
+            cv.imshow(CV_WINDOW_TITLE, process_sudoku(frame, model))
             if cv.waitKey(1) == ord('q'):
                 break
         cap.release()
     elif args.image:
         if os.path.exists(args.image):
             img = cv.cvtColor(cv.imread(args.image), cv.COLOR_BGR2RGB)
-            cv.imshow(CV_WINDOW_TITLE, process_sudoku_image(img, model))
+            cv.imshow(CV_WINDOW_TITLE, process_sudoku(img, model))
             cv.waitKey(0)
         else:
             print(f"Sudoku Solver: Path {args.image} does not exist.")
