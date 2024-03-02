@@ -43,11 +43,11 @@ if __name__ == "__main__":
                     prog='Realtime Sudoku Solver',
                     description='A Python script that automatically solves Sudoku puzzles from image or video input.')
     parser.add_argument('-i', '--image', help="Path to Sudoku image")   
-    parser.add_argument('-v', '--video', action="store_true", help="Flag for using the standard video input")   
+    parser.add_argument('-v', '--video', nargs='?', const=0, type=int, help="Flag for using video input. Provide a number for a specific input (default=0).")   
     args = parser.parse_args()
-    if args.video:
+    if args.video is not None:
         print("Press 'q' key to end the Sudoku Solver.")
-        cap = cv.VideoCapture(1)
+        cap = cv.VideoCapture(args.video)
         if not cap.isOpened():
             print("Sudoku Solver: Cannot open camera.")
             exit(1)
