@@ -47,7 +47,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.video:
         print("Press 'q' key to end the Sudoku Solver.")
-        cap = cv.VideoCapture(0)
+        cap = cv.VideoCapture(1)
         if not cap.isOpened():
             print("Sudoku Solver: Cannot open camera.")
             exit(1)
@@ -56,10 +56,9 @@ if __name__ == "__main__":
             if not ret:
                 print("Sudoku Solver: Can't receive frame from camera. Abort Sudoku Solver.")
                 exit(1)
-            raise NotImplementedError("Video support is not implemented")
+            cv.imshow(CV_WINDOW_TITLE, process_sudoku_image(frame, model))
             if cv.waitKey(1) == ord('q'):
                 break
-        # When everything done, release the capture
         cap.release()
     elif args.image:
         if os.path.exists(args.image):

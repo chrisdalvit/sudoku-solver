@@ -18,7 +18,9 @@ def preprocessing(img: cv.typing.MatLike) -> cv.typing.MatLike:
     """
     img = img.copy()
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    img = cv.GaussianBlur(img, (5,5), 2)
+    max_dim = max(img.shape[0], img.shape[1])
+    kernel_size = int(max_dim*0.01) if int(max_dim*0.01) % 2 == 1 else int(max_dim*0.01)+1
+    img = cv.GaussianBlur(img, (kernel_size,kernel_size), 0)
     img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
     return img
 
@@ -27,13 +29,14 @@ def _count_children(contour_index: int, hierarchy: List[List[int]]) -> int:
 
     Args:
         contour_index (int): Index of the parent countour
-        hierarchy (_type_): Hierarchy of contours returned by OpenCV's findContours method
+        hierarchy (List[List[int]]): Hierarchy of contours returned by OpenCV's findContours method
 
     Returns:
         int: Number of children
     """
-    top_hierarchy = hierarchy[0]
-    return len(list(filter(lambda x: x[3] == contour_index, top_hierarchy)))
+    parent_idx = hierarchy[0][:,3]
+    mask = parent_idx == contour_index
+    return len(parent_idx[mask]) 
 
 def _sort_corners(corners: List[List[int]]) -> List[List[int]]:
     """Sort the corners of a rectangle in clockwise order.
@@ -88,6 +91,7 @@ def find_sudoku_square(img: cv.typing.MatLike) -> Tuple[cv.typing.MatLike, List[
             num_children = _count_children(i, hierarchy)
             if num_children == 9 or num_children == 81:
                 return _extract_sudoku_square(img, approx)
+    return None, []
     
 def _compute_cell_border_mask(cell: cv.typing.MatLike) -> cv.typing.MatLike:
     """Create mask of cell borders.
@@ -99,11 +103,13 @@ def _compute_cell_border_mask(cell: cv.typing.MatLike) -> cv.typing.MatLike:
         cv.typing.MatLike: Mask where borders have value 0 (or near to zero)
     """
     contours, _ = cv.findContours(cell, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-    s = max(contours, key=cv.contourArea)
-    mask = np.zeros(cell.shape, dtype="uint8")
-    mask = cv.drawContours(mask, [s], -1, 255, -1)
-    # Erode to avoid artifacts when subtracting the mask
-    return cv.erode(mask, cv.getStructuringElement(cv.MORPH_RECT,(7,7)), iterations=1) 
+    if contours:
+        s = max(contours, key=cv.contourArea)
+        mask = np.zeros(cell.shape, dtype="uint8")
+        mask = cv.drawContours(mask, [s], -1, 255, -1)
+        # Erode to avoid artifacts when subtracting the mask
+        return cv.erode(mask, cv.getStructuringElement(cv.MORPH_RECT,(7,7)), iterations=1) 
+    return cell
 
 def _remove_cell_borders(cell: cv.typing.MatLike) -> cv.typing.MatLike:
     """Remove border artifacts on edges of the cell.
