@@ -34,8 +34,11 @@ def process_sudoku(img, model):
             preds.append(None)
 
     sudoku = Sudoku(preds)
-    I = draw_digits(img, sudoku, corners)
-    return blend_images(I, img, I)
+    solution = sudoku.solve()
+    if solution:
+        I = draw_digits(img, sudoku, solution, corners)
+        return blend_images(I, img, I)
+    return cv.putText(img, "Cannot solve Sudoku", (200,200), cv.FONT_HERSHEY_COMPLEX, 3, (0,0,255), 3)
 
 
 if __name__ == "__main__": 

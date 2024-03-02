@@ -162,20 +162,19 @@ def blend_images(foreground: cv.typing.MatLike, background: cv.typing.MatLike, m
     background = cv.multiply((1.0 - mask).astype(np.uint8), background)
     return cv.add((foreground*255).astype(np.uint8), background)
 
-def draw_digits(img: cv.typing.MatLike, sudoku: Sudoku, corners: List[List[int]], transform_size=1000) -> cv.typing.MatLike:
+def draw_digits(img: cv.typing.MatLike, sudoku: Sudoku, solution: Sudoku, corners: List[List[int]], transform_size=1000) -> cv.typing.MatLike:
     """Apply perspecitve transform to Sudoku square and draw the solution digits.
 
     Args:
         img (cv.typing.MatLike): The original image where the Sudoku square is located
-        sudoku (Sudoku): The Sudoku to solve
+        sudoku (Sudoku): The original Sudoku
+        solution (Sudoku): The solution of the original Sudoku
         corners (List[List[int]]): List of corners of the Sudoku square in the original image
         transform_size (int, optional): _description_. Defaults to 1000.
 
     Returns:
         cv.typing.MatLike: Image with solution digits and applied perspective transform
     """
-    solution = sudoku.solve()
-    
     if solution is None:
         return img
 
