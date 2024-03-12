@@ -6,13 +6,13 @@ import numpy as np
 import torch
 
 from processing import preprocessing, find_sudoku_square, extract_cells, blend_images, draw_digits, _count_children
-from neural_network import NeuralNetwork
+from classifier.neural_network import NeuralNetwork
 from sudoku import Sudoku
 
 CV_WINDOW_TITLE = "Sudoku Solver"
 
 model = NeuralNetwork()
-model.load_state_dict(torch.load("model_file.pt"))
+model.load_state_dict(torch.load("./classifier/model_file.pt"))
 
 def is_empty_cell(cell, cutoff=5, threshold=0.03):
     center = cell[cutoff:-cutoff,cutoff:-cutoff]

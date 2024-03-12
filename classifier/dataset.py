@@ -3,11 +3,8 @@ import os
 import cv2 as cv
 import numpy as np
 
-ASSETS_PATH = "./archive/assets"
+ASSETS_PATH = "../archive/assets"
 target_classes = [1,2,3,4,5,6,7,8,9]
-
-# Source: 
-# https://www.kaggle.com/datasets/kshitijdhama/printed-digits-dataset?resource=download
 
 def get_sample_names():
     names = []

@@ -1,6 +1,7 @@
 import torch.nn as nn
 
 class NeuralNetwork(nn.Module):
+    """Convolutional Neural Network for digit classification."""
     
     def __init__(self):
         super(NeuralNetwork, self).__init__()
