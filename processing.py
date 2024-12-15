@@ -66,7 +66,6 @@ def _extract_sudoku_square(img: cv.typing.MatLike, corners: List[List[int]]) -> 
     Returns:
         Tuple[cv.typing.MatLike, List[List[int]]]: The extracted image patch and the list of corner points 
     """
-    img = img.copy()
     dst_size = 1000
     src_pts = _sort_corners(corners)
     dst_pts = np.array([[0,0], [1,0], [0,1], [1,1]]).astype(np.float32) * dst_size

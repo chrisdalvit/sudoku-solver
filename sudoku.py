@@ -91,7 +91,9 @@ class Sudoku:
             (i,j), candidates  = sorted_empty_squares[0]
             for c in candidates:
                 self[i,j] = c
-                return self._solve_puzzle()
+                solution = self._solve_puzzle()
+                if solution is not None:
+                    return solution
             return None
     
     def _copy(self) -> "Sudoku":
