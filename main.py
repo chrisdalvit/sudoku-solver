@@ -4,6 +4,7 @@ import os
 import cv2 as cv
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 
 from processing import preprocessing, find_sudoku_square, extract_cells, blend_images, draw_digits, _count_children
 from classifier.neural_network import NeuralNetwork
@@ -37,7 +38,7 @@ def process_sudoku(img, model):
     solution = sudoku.solve()
     if solution:
         I = draw_digits(img, sudoku, solution, corners)
-        return blend_images(I, img, I)
+        return blend_images(img, I)
     return cv.putText(img, "Cannot solve Sudoku", (200,200), cv.FONT_HERSHEY_COMPLEX, 3, (0,0,255), 3)
 
 

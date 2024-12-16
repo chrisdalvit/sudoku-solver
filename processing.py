@@ -145,11 +145,10 @@ def extract_cells(img: cv.typing.MatLike) -> List[cv.typing.MatLike]:
             cells.append(cv.resize(cell, (28,28)))
     return np.array(cells).astype(np.float32) / 255.
     
-def blend_images(foreground: cv.typing.MatLike, background: cv.typing.MatLike, mask: cv.typing.MatLike, color=(0.,0.,1.)):
+def blend_images(background: cv.typing.MatLike, mask: cv.typing.MatLike, color=(0.,0.,1.)):
     """Blend solution image with original background image.
 
     Args:
-        foreground (cv.typing.MatLike): Image of the solution digits to blend in with range [0,1]
         background (cv.typing.MatLike): Original background image with range [0,255]
         mask (cv.typing.MatLike): Mask to use for the alpha channel with range [0,1]
         color (tuple, optional): Color of the blended digits. Defaults to (0.,0.,1.).
@@ -157,7 +156,7 @@ def blend_images(foreground: cv.typing.MatLike, background: cv.typing.MatLike, m
     Returns:
         cv.typing.MatLike: The blended image
     """
-    foreground = foreground * color
+    foreground = mask * color
     background = cv.multiply((1.0 - mask).astype(np.uint8), background)
     return cv.add((foreground*255).astype(np.uint8), background)
 
